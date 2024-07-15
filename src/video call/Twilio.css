@@ -1,0 +1,120 @@
+.twilio__container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  background: #2b2b33;
+  padding: 15px;
+}
+
+.callScreen__connecting .name {
+  color: white;
+  font-size: 22px;
+  margin-top: 0;
+  font-weight: 500;
+  margin-bottom: 10px;
+  text-transform: capitalize;
+}
+
+.callScreen__connecting .status {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 16px;
+  margin-top: 0;
+  font-weight: 500;
+}
+
+.chat__controls {
+  max-width: 600px;
+  width: fit-content;
+  position: fixed;
+  bottom: 20px;
+  border-radius: 50%;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: 0.3s ease-in-out;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.chat__controls:hover {
+  border: 2px solid rgb(29, 117, 189);
+  /* color: rgb(29, 117, 189); */
+}
+
+.chat__controls img {
+  max-width: 30px;
+  height: auto;
+  width: 100%;
+}
+
+.initial__bubble {
+  height: 100px;
+  width: 100px;
+  border-radius: 50px;
+
+  font-size: 30px;
+  font-weight: 700;
+  /* color: indianred; */
+  color: rgb(29, 117, 189);
+  border: 2px solid rgb(29, 117, 189);
+  /* border: 2px solid indianred; */
+  background-color: white;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transform: translate(-50%, -50%) scale(1);
+
+  animation-name: glow;
+  animation-delay: 0.1s;
+  animation-direction: normal;
+  animation-duration: 2s;
+  animation-fill-mode: both;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes glow {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.3);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+#check__akshay video:first-of-type {
+  height: 150px;
+  width: auto;
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  border-radius: 10px;
+  border: 1px solid indianred;
+  transition: 0.3s ease-in-out;
+}
+
+#check__akshay video:last-of-type {
+  width: auto;
+  height: calc(100vh);
+  top: 0;
+  left: 50%;
+  position: fixed;
+  transform: translateX(-50%);
+  transition: 0.3s ease-in-out;
+}

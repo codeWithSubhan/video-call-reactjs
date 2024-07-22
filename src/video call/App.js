@@ -2,6 +2,8 @@ import { connect } from "twilio-video";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import { useEffect, useRef, useState } from "react";
 import { patientData, userData, authToken } from "./patientData";
+import { ToastContainer, toast, Slide } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
 import "./Twilio.css";
 
@@ -10,12 +12,32 @@ const API_BASE_PATH = "https://staging-api.seniorconnex.com";
 function App() {
   const [identity, setIdentity] = useState("");
   const [room, setRoom] = useState(null);
+  const ws = useRef(null);
+  const [toastId, setToastId] = useState(null);
 
   function returnToLobby() {
     setRoom(null);
   }
 
+  function sendMessage() {
+    const send_message = {
+      networkName: userData.network.networkName,
+      // senderFirstName: userData.firstName,
+      // senderLastName: userData.lastName,
+      clientID: userData._id,
+      // receiverFirstName: "jumman",
+      // receiverLastName: "ansari",
+      requestedID: "6685387a5c829c6d300d488d",
+      type: "request_video_call",
+      date: Date.now(),
+    };
+    ws.current.send(JSON.stringify(send_message));
+  }
+
   async function handleJoinRoom() {
+    if (ws.current.readyState !== WebSocket.OPEN)
+      alert("WebSocket is not connected!");
+
     try {
       const response = await fetch(
         `${API_BASE_PATH}/twilio/getTwilioToken?id=${patientData._id}&roomName=${userData.network.networkName}&shouldInitiateCall=0`,
@@ -28,6 +50,49 @@ function App() {
       );
       const data = await response.json();
       console.log("data", data);
+
+      const room = await connect(data.result.token, {
+        name: userData.network.networkName,
+        audio: true,
+        video: true,
+        preferredVideoCodecs: ["VP8"],
+      });
+      await fetch(
+        `${API_BASE_PATH}/twilio/getTwilioToken?id=${patientData._id}&roomName=${userData.network.networkName}&shouldInitiateCall=1`,
+        {
+          headers: {
+            "content-type": "application/json",
+            authorization: authToken,
+          },
+        }
+      );
+      setRoom(room);
+      console.log("room connected", room);
+
+      sendMessage();
+    } catch (err) {
+      returnToLobby();
+      alert(err.message);
+    }
+  }
+
+  async function handleJoinRoom1() {
+    if (ws.current.readyState !== WebSocket.OPEN)
+      alert("WebSocket is not connected!");
+
+    try {
+      const response = await fetch(
+        `${API_BASE_PATH}/twilio/getTwilioToken?id=${patientData._id}&roomName=${userData.network.networkName}&shouldInitiateCall=0`,
+        {
+          headers: {
+            "content-type": "application/json",
+            authorization: authToken,
+          },
+        }
+      );
+      const data = await response.json();
+      console.log("data", data);
+
       const room = await connect(data.result.token, {
         name: userData.network.networkName,
         audio: true,
@@ -51,8 +116,85 @@ function App() {
     }
   }
 
+  function storeData() {
+    const send_message = {
+      clientID: userData._id,
+      type: "store_data",
+    };
+    ws.current.send(JSON.stringify(send_message));
+  }
+
+  const handleAnswerCall = async () => {
+    toast.dismiss(toastId);
+    console.log("Call answered");
+    await handleJoinRoom1();
+  };
+
+  const handleDeclineCall = () => {
+    toast.dismiss(toastId);
+    console.log("Call declined");
+  };
+
+  useEffect(() => {
+    ws.current = new WebSocket(`ws://${window.location.hostname}:8080`);
+
+    ws.current.addEventListener("open", () => {
+      console.log("WebSocket connected");
+      storeData();
+    });
+
+    ws.current.addEventListener("message", (e) => {
+      const data = JSON.parse(e.data);
+      console.log("Received from server:", data);
+
+      const { type } = data;
+      if (type === "request_video_call") {
+        const id = toast(
+          <div>
+            <p>Video Calling...</p>
+            <div>
+              <button onClick={handleAnswerCall}>answer</button>
+              <button onClick={handleDeclineCall}>decline</button>
+            </div>
+          </div>,
+          {
+            position: "top-center",
+            autoClose: false,
+            hideProgressBar: true,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            // onClose: () => console.log("Called when I close"),
+            progress: undefined,
+            theme: "light",
+            transition: Slide,
+          }
+        );
+        setToastId(id);
+      }
+    });
+
+    ws.current.addEventListener("error", (error) => {
+      console.error("WebSocket error:", error.message);
+      ws.current.close();
+    });
+
+    return () => ws.current.close();
+  }, []);
+
   return (
     <div className="app">
+      <ToastContainer
+        position="top-center"
+        autoClose={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        theme="light"
+        transition={Slide}
+      />
       {room === null ? (
         <div className="lobby" onClick={handleJoinRoom}>
           <VideocamIcon fontSize="large" color="error" />
@@ -60,7 +202,11 @@ function App() {
           Start video Call
         </div>
       ) : (
-        <Room returnToLobby={returnToLobby} room={room} />
+        <Room
+          returnToLobby={returnToLobby}
+          room={room}
+          sendMessage={sendMessage}
+        />
       )}
     </div>
   );

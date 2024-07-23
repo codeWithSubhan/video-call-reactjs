@@ -1,7 +1,7 @@
 import { connect } from "twilio-video";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import { useEffect, useRef, useState } from "react";
-import { patientData, userData, authToken1, authToken } from "./patientData";
+import { patientData, userData, authToken, authToken1 } from "./patientData";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
@@ -44,8 +44,7 @@ function App() {
         {
           headers: {
             "content-type": "application/json",
-            authorization: authToken1,
-            authToken,
+            authorization: authToken,
           },
         }
       );
@@ -63,8 +62,7 @@ function App() {
         {
           headers: {
             "content-type": "application/json",
-            authorization: authToken1,
-            authToken,
+            authorization: authToken,
           },
         }
       );
@@ -120,7 +118,7 @@ function App() {
 
   function storeData() {
     const send_message = {
-      clientID: userData._id,
+      clientID: patientData._id,
       type: "store_data",
     };
     ws.current.send(JSON.stringify(send_message));

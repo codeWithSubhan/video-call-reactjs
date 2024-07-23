@@ -35,6 +35,8 @@ export const patientData = {
   __v: 0,
 };
 export const authToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2Njg1Mzg0NjVjODI5YzZkMzAwZDQ4N2MiLCJpYXQiOjE3MjAwOTA0OTZ9.b_qO8wAnLAmiibNOIkcaAS6R6uDuVvSrtf5CFkeTe18`;
+export const authToken1 = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2Njg1Mzg3YTVjODI5YzZkMzAwZDQ4OGQiLCJpYXQiOjE3MjE3MDg3MTZ9.HQz7ozM251GD5v6LNvLJw3Bg7cNuEfERw6LeGotLPdo`;
+
 export const userData = {
   isMultimediaTextChat: true,
   isCall: true,

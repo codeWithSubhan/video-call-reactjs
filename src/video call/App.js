@@ -136,7 +136,7 @@ function App() {
   };
 
   useEffect(() => {
-    ws.current = new WebSocket(`ws://${window.location.hostname}:8080`);
+    ws.current = new WebSocket(`ws://192.168.1.2:8080`);
 
     ws.current.addEventListener("open", () => {
       console.log("WebSocket connected");

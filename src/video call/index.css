@@ -4,6 +4,9 @@ body {
   justify-content: center;
   height: 100dvh;
 }
+.app {
+  text-align: center;
+}
 
 .lobby {
   text-align: center;

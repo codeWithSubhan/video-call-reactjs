@@ -1,19 +1,38 @@
 import { connect } from "twilio-video";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import { useEffect, useRef, useState } from "react";
+import firebase, { messaging } from "./firebase";
+
 import { patientData, userData, authToken, authToken1 } from "./patientData";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
 import "./Twilio.css";
+import audio from "./audio.mp3";
+import { onMessage } from "firebase/messaging";
 
 const API_BASE_PATH = "https://staging-api.seniorconnex.com";
+const myAudio = new Audio(audio);
 
 function App() {
   const [identity, setIdentity] = useState("");
   const [room, setRoom] = useState(null);
   const ws = useRef(null);
   const [toastId, setToastId] = useState(null);
+  const [message, setMessage] = useState("");
+
+  function playAudio() {
+    myAudio.play().catch();
+  }
+
+  function pauseAudio() {
+    myAudio.pause();
+  }
+
+  function handleAudio() {
+    if (myAudio.paused) myAudio.play().catch();
+    else myAudio.pause();
+  }
 
   function returnToLobby() {
     setRoom(null);
@@ -27,7 +46,7 @@ function App() {
       clientID: userData._id,
       // receiverFirstName: "jumman",
       // receiverLastName: "ansari",
-      requestedID: "6685387a5c829c6d300d488d",
+      requestedID: patientData._id,
       type: "request_video_call",
       date: Date.now(),
     };
@@ -35,8 +54,8 @@ function App() {
   }
 
   async function handleJoinRoom() {
-    if (ws.current.readyState !== WebSocket.OPEN)
-      alert("WebSocket is not connected!");
+    // if (ws.current.readyState !== WebSocket.OPEN)
+    //   alert("WebSocket is not connected!");
 
     try {
       const response = await fetch(
@@ -118,19 +137,21 @@ function App() {
 
   function storeData() {
     const send_message = {
-      clientID: patientData._id,
+      clientID: userData._id,
       type: "store_data",
     };
     ws.current.send(JSON.stringify(send_message));
   }
 
   const handleAnswerCall = async () => {
+    pauseAudio();
     toast.dismiss(toastId);
     console.log("Call answered");
     await handleJoinRoom1();
   };
 
   const handleDeclineCall = () => {
+    pauseAudio();
     toast.dismiss(toastId);
     console.log("Call declined");
   };
@@ -182,6 +203,50 @@ function App() {
     return () => ws.current.close();
   }, []);
 
+  useEffect(() => {
+    onMessage(messaging, (payload) => {
+      console.log("Message received in foreground:", payload);
+      // toast.info(
+      //   `${payload.notification.title}   ${payload.notification.body}   `
+      // );
+      displayIncomingCallNotification();
+      playAudio();
+    });
+  }, []);
+
+  function displayIncomingCallNotification() {
+    const id = toast(
+      <div>
+        <p>Video Calling...</p>
+        <div>
+          <button onClick={handleAnswerCall}>answer</button>
+          <button onClick={handleDeclineCall}>decline</button>
+        </div>
+      </div>,
+      {
+        position: "top-center",
+        autoClose: false,
+        hideProgressBar: true,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        // onClose: () => console.log("Called when I close"),
+        progress: undefined,
+        theme: "light",
+        transition: Slide,
+      }
+    );
+    setToastId(id);
+  }
+
+  useEffect(() => {
+    document.addEventListener("click", (event) => {
+      console.log("allow");
+    });
+  }, []);
+
+  // return <Noti />;
+
   return (
     <div className="app">
       <ToastContainer
@@ -196,11 +261,15 @@ function App() {
         transition={Slide}
       />
       {room === null ? (
-        <div className="lobby" onClick={handleJoinRoom}>
-          <VideocamIcon fontSize="large" color="error" />
+        <>
+          <div className="lobby" onClick={handleJoinRoom}>
+            <VideocamIcon fontSize="large" color="error" />
+            <br />
+            Start video Call
+          </div>{" "}
           <br />
-          Start video Call
-        </div>
+          <button onClick={handleAudio}>play audio</button> <br />
+        </>
       ) : (
         <Room
           returnToLobby={returnToLobby}
